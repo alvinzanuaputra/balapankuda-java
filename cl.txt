@@ -1,0 +1,146 @@
+nomor 1 
+
+buka web console mayour router
+udah masuk nih pencet tombol atas keluar ip tables
+langsung enter 
+
+nah coba ping google.com
+
+
+nomor 2
+
+ketik di dns master
+bash /root/createdom.sh
+
+udah nih
+
+terus ke client
+
+nah kalau ping tantangansulit2024.com
+service not known
+nameserver ganti punya gns master
+
+nano /etc/resolv.conf
+
+taruh bawahnya : bawaan dns 
+nameserver....... (ini comment in)
+nameserver 192.168.2.2
+
+
+nomor3
+
+buka dulu
+nano /etc/bind/named.conf.options
+
+forwarders {
+    192.168.122.1;
+};
+// dnssec-validation auto;
+allow-query{any;};
+
+
+save
+
+
+service bind9 restart
+
+
+terus ke client 2 ping google.com bisa harusnya
+
+kenapa bisa?  karena dalam dns master tadi forwardersnya ke ip DNS bawaan
+
+
+nomor 4
+
+ubah nameserver dulu
+nano /etc/resolv.conf
+
+nameserver 192.168.122.1
+
+di-> webserver2
+1). apt-get update && apt install nginx php php-fpm -y 
+
+klik 6 lalu 35
+
+2). mkdir /var/www/jarkom
+3). nano /var/www/jarkom/tes.html
+
+
+isi html :
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Challenge Jarkom Modul 2</title>
+</head>
+<body>
+    <h1>Saya telah menamatkan challenge jarkom modul 2</h1>
+</body>
+</html>
+
+4). nano /etc/nginx/sites-available/jarkom -> isi kayak di GitHub, server name pake webserver2
+
+isi :
+server {
+
+	listen 80;
+
+	root /var/www/jarkom;
+
+	index index.php tes.html index.htm;
+	server_name _;
+
+	location / {
+		try_files $uri $uri/ /index.php?$query_string;
+	}
+
+	# pass PHP scripts to FastCGI server
+	location ~ \.php$ {
+		include snippets/fastcgi-php.conf;
+		fastcgi_pass unix:/var/run/php/php7.2-fpm.sock;
+	}
+
+	location ~ /\.ht {
+		deny all;
+		}
+	
+		error_log /var/log/nginx/jarkom_error.log;
+		access_log /var/log/nginx/jarkom_access.log;
+}
+
+
+
+5). ln -s /etc/nginx/sites-available/jarkom /etc/nginx/sites-enabled
+6). service nginx restart
+7). 
+nano /etc/resolv.conf
+nameserver 192.168.2.2
+nameserver 192.168.2.4 -> client2
+
+
+install dulu
+
+ip webserver 2 :
+lynx 192.168.2.4 
+
+
+
+na siitu kan masih error balik ke webserver 2
+
+cd /etc/nginx/sites-enabled/
+
+terus 
+
+ls
+rm default
+ls
+
+service nginx restart
+
+
+
+
+
+
